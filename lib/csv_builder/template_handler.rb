@@ -108,6 +108,9 @@ module CsvBuilder # :nodoc:
           end
         end
 
+        output_excel_sep_header = @csv_options[:excel_sep_header] || false
+        @csv_options.delete :excel_sep_header
+
         if @streaming
           template = Proc.new {|csv|
             #{template.source}
@@ -118,7 +121,13 @@ module CsvBuilder # :nodoc:
             csv = CsvBuilder::TransliteratingFilter.new(faster_csv, @input_encoding || 'UTF-8', @output_encoding || 'ISO-8859-1')
             #{template.source}
           end
-          output
+
+          if output_excel_sep_header == true
+            sep = @csv_options[:col_sep] || ","
+            return 'sep=' + sep + '\n' + output
+          else
+            return output
+          end
         end
       rescue Exception => e
         Rails.logger.warn("Exception \#{e} \#{e.message} with class \#{e.class.name} thrown when rendering CSV")
